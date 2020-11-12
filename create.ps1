@@ -7,9 +7,6 @@ $auditMessage = "for person $($p.DisplayName)";
 #Not the best implementation method, but it does work. Useful generating a random password with the Cloud Agent since [System.Web] is not available.
 function New-RandomPassword($PasswordLength)
 {
-    # Length of the password to be generated
-    #$PasswordLength = 20
-
     if($PasswordLength -lt 4) {$PasswordLength = 4}
         
     # Used to store an array of characters that can be used for the password
@@ -50,7 +47,10 @@ $result = [PSCustomObject]@{
 	Success= $success;
 	AccountReference= $account.password;
 	AuditDetails=$auditMessage;
-    Account = $account;
+    	Account = $account;
+	ExportData = [PSCustomObject]@{
+			Password = $account.password;
+	}
 };
 
 #send result back
