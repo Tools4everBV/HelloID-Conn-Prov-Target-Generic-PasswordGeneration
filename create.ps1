@@ -4,54 +4,67 @@ $m = $manager | ConvertFrom-Json;
 $success = $False;
 $auditMessage = "for person $($p.DisplayName)";
 
-#Not the best implementation method, but it does work. Useful generating a random password with the Cloud Agent since [System.Web] is not available.
 function New-RandomPassword($PasswordLength)
 {
     if($PasswordLength -lt 4) {$PasswordLength = 4}
         
     # Used to store an array of characters that can be used for the password
-    $CharPool = New-Object System.Collections.ArrayList
+    $CharPoolLower = New-Object System.Collections.ArrayList
+    $CharPoolUpper = New-Object System.Collections.ArrayList
+    $CharPoolSpecial = New-Object System.Collections.ArrayList
+    $CharPoolNumber = New-Object System.Collections.ArrayList
 
     # Add characters a-z to the arraylist
-    for ($index = 97; $index -le 122; $index++) { [Void]$CharPool.Add([char]$index) }
+    for ($index = 97; $index -le 122; $index++) { [Void]$CharPoolLower.Add([char]$index) }
 
     # Add characters A-Z to the arraylist
-    for ($index = 65; $index -le 90; $index++) { [Void]$CharPool.Add([Char]$index) }
+    for ($index = 65; $index -le 90; $index++) { [Void]$CharPoolUpper.Add([Char]$index) }
 
     # Add digits 0-9 to the arraylist
-    $CharPool.AddRange(@("0","1","2","3","4","5","6","7","8","9"))
+    $CharPoolNumber.AddRange(@("0","1","2","3","4","5","6","7","8","9"))
         
     # Add a range of special characters to the arraylist
-    $CharPool.AddRange(@("!","""","#","$","%","&","'","(",")","*","+","-",".","/",":",";","<","=",">","?","@","[","\","]","^","_","{","|","}","~","!"))
+    $CharPoolSpecial.AddRange(@("!","""","#","$","%","&","'","(",")","*","+","-",".","/",":",";","<","=",">","?","@","[","\","]","^","_","{","|","}","~","!"))
         
     $password=""
-    $rand=New-Object System.Random
+    $UpperCount = Get-Random -Maximum 2 -Minimum 1;
+    $SpecialCount = Get-Random -Maximum 2 -Minimum 1;
+    $NumberCount = Get-Random -Maximum 2 -Minimum 1;
+    $PasswordLength = $PasswordLength - ($UpperCount + $SpecialCount + $NumberCount);
+    $rand=New-Object System.Random;
         
     # Generate password by appending a random value from the array list until desired length of password is reached
-    1..$PasswordLength | foreach { $password = $password + $CharPool[$rand.Next(0,$CharPool.Count)] }  
+    1..$UpperCount | foreach { $password = $password + $CharPoolUpper[$rand.Next(0,$CharPoolUpper.count)] }  
+    1..$SpecialCount | foreach { $password = $password + $CharPoolSpecial[$rand.Next(0,$CharPoolSpecial.count)] }  
+    1..$NumberCount | foreach { $password = $password + $CharPoolNumber[$rand.Next(0,$CharPoolNumber.count)] } 
+    1..$PasswordLength | foreach { $password = $password + $CharPoolLower[$rand.Next(0,$CharPoolLower.count)] }   
         
     #print password
+    $password = ($password -split '' | Sort-Object {Get-Random}) -join ''
     $password;
 }
+
 
 #Change mapping here
 $account = [PSCustomObject]@{
     password = New-RandomPassword(8);
 }
 
+ 
 $success = $True;
 $auditMessage = "for person $($p.DisplayName)";
 
 #build up result
 $result = [PSCustomObject]@{ 
-	Success= $success;
-	AccountReference= $account.password;
-	AuditDetails=$auditMessage;
-    	Account = $account;
-	ExportData = [PSCustomObject]@{
-			Password = $account.password;
-	}
+    Success= $success;
+    AccountReference= $account.password;
+    AuditDetails=$auditMessage;
+        Account = $account;
+    ExportData = [PSCustomObject]@{
+            Password = $account.password;
+    }
 };
+
 
 #send result back
 Write-Output $result | ConvertTo-Json -Depth 10
