@@ -2,17 +2,17 @@
 $p = $person | ConvertFrom-Json;
 $m = $manager | ConvertFrom-Json;
 $success = $False;
-$auditMessage = "for person $($p.DisplayName)";
+$auditLogs = [System.Collections.Generic.List[PSCustomObject]]::new()
 
 function New-RandomPassword($PasswordLength)
 {
     if($PasswordLength -lt 4) {$PasswordLength = 4}
         
     # Used to store an array of characters that can be used for the password
-    $CharPoolLower = New-Object System.Collections.ArrayList
-    $CharPoolUpper = New-Object System.Collections.ArrayList
-    $CharPoolSpecial = New-Object System.Collections.ArrayList
-    $CharPoolNumber = New-Object System.Collections.ArrayList
+    $CharPoolLower = [System.Collections.ArrayList]::new()
+    $CharPoolUpper = [System.Collections.ArrayList]::new()
+    $CharPoolSpecial = [System.Collections.ArrayList]::new()
+    $CharPoolNumber = [System.Collections.ArrayList]::new()
 
     # Add characters a-z to the arraylist
     for ($index = 97; $index -le 122; $index++) { [Void]$CharPoolLower.Add([char]$index) }
@@ -31,7 +31,7 @@ function New-RandomPassword($PasswordLength)
     $SpecialCount = Get-Random -Maximum 2 -Minimum 1;
     $NumberCount = Get-Random -Maximum 2 -Minimum 1;
     $PasswordLength = $PasswordLength - ($UpperCount + $SpecialCount + $NumberCount);
-    $rand=New-Object System.Random;
+    $rand= [System.Random]::new();
         
     # Generate password by appending a random value from the array list until desired length of password is reached
     1..$UpperCount | foreach { $password = $password + $CharPoolUpper[$rand.Next(0,$CharPoolUpper.count)] }  
@@ -44,24 +44,50 @@ function New-RandomPassword($PasswordLength)
     $password;
 }
 
+try{
 
-#Change mapping here
-$account = [PSCustomObject]@{
-    password = New-RandomPassword(8);
+
+    #Change mapping here
+	$account = [PSCustomObject]@{
+		password = New-RandomPassword(8);
 }
 
- 
-$success = $True;
-$auditMessage = "for person $($p.DisplayName)";
+    $auditLogs.Add([PSCustomObject]@{
+            Action  = "CreateAccount"
+            Message = "Generated random password"
+            IsError = $false
+            })
+}
+
+catch{
+
+        $auditLogs.Add([PSCustomObject]@{
+            Action  = "CreateAccount"
+            Message = "Failed to generate password"
+            IsError = $True
+        })
+
+}
+finally {
+
+    # Check if auditLogs contains errors, if no errors are found, set success to true
+    if (-NOT($auditLogs.IsError -contains $true)) {
+        $success = $true
+    }
+    
+$aRef = [guid]::NewGuid().GUID
 
 #build up result
-$result = [PSCustomObject]@{ 
-    Success= $success;
-    AccountReference= $account.password;
-    AuditDetails=$auditMessage;
-        Account = $account;
-    ExportData = [PSCustomObject]@{
-            Password = $account.password;
+$result = [PSCustomObject]@{
+    Success          = $success
+    AccountReference = $aRef
+    AuditLogs        = $auditLogs
+    Account          = $account
+
+    # Optionally return data for use in other systems
+    ExportData       = [PSCustomObject]@{
+			Password = $account.password
+        }
     }
 };
 
