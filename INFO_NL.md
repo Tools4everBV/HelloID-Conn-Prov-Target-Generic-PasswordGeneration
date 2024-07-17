@@ -1,5 +1,3 @@
-# PowerShell
-
 De Identity & Access Management (IAM)-oplossing HelloID van Tools4ever integreert met een breed scala aan bron- en doelsystemen. PowerShell speelt een onmisbare rol bij het realiseren van deze integraties. In dit artikel lees je meer over de manier waarop HelloID gebruik maakt van PowerShell, welke rol deze oplossing speelt in de connectoren die we aanbieden en wat de voordelen zijn PowerShell. 
 
 # Wat is PowerShell?
@@ -25,4 +23,4 @@ Voor het waarborgen van de transparantie en eenvoud maakt HelloID gebruik van pe
 HelloID biedt zeer brede integratiemogelijkheden met uiteenlopende systemen. Bij het realiseren van deze koppelingen zijn we afhankelijk van de mogelijkheden die een leverancier aanbiedt. Met behulp van PowerShell kunnen we echter elke denkbare mogelijkheid ondersteunen. Zo kunnen we onder meer werken met API’s, webservices, SQL-databases en CSV-bestanden. 
 
 Ook de fysieke locatie waar systemen draaien is geen belemmering. Gaat het om een cloudgebaseerd systeem? Dan realiseert HelloID met behulp van een cloud agent - op basis van PowerShell Core 7 of hoger - een cloud-to-cloud verbinding. Gaat het om een on-premises systeem die op jouw eigen infrastructuur draait? Dan kunnen we middels de on-premises HelloID agent - gebaseerd op PowerShell 5.1 - een koppeling realiseren. 
-HelloID biedt in totaal zo’n 200 connectoren aan.
+HelloID biedt in totaal zo’n 200 connectoren aan. Kijk [hier](https://www.tools4ever.nl/connectoren/) voor een overzicht van alle connectoren.
